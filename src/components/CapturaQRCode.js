@@ -1,11 +1,21 @@
-import React, {useState, useRef} from 'react';
-import {StyleSheet, Text, View, Dimensions} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet, View, Dimensions, Text} from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
-import {RNCamera} from 'react-native-camera';
 
 const CapturaQRCode = ({onQRCodeRead}) => {
   const [scannedValue, setScannedValue] = useState('');
-  const cameraRef = useRef(null);
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    // Limpar o valor escaneado quando a tela receber o foco novamente
+    const unsubscribe = navigation.addListener('focus', () => {
+      setScannedValue('');
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const handleBarCodeRead = event => {
     if (!scannedValue) {
@@ -14,15 +24,10 @@ const CapturaQRCode = ({onQRCodeRead}) => {
     }
   };
 
-  const handleScanAgain = () => {
-    setScannedValue(''); // Limpa o valor do código lido para que possa ser lido novamente
-  };
-
   const drawRectangleOnCamera = () => {
     const windowWidth = Dimensions.get('window').width;
-    // const windowHeight = Dimensions.get('window').height;
     const squareSize = 250;
-    const squarePositionTop = squareSize / 2;
+    const squarePositionTop = 100;
     const squarePositionLeft = (windowWidth - squareSize) / 2;
 
     return (
@@ -42,25 +47,22 @@ const CapturaQRCode = ({onQRCodeRead}) => {
 
   return (
     <View style={styles.container}>
-      <RNCamera
-        ref={cameraRef}
-        style={styles.camera}
-        type={RNCamera.Constants.Type.back}
-        flashMode={RNCamera.Constants.FlashMode.off}
-        onBarCodeRead={handleBarCodeRead}
-        captureAudio={false}>
-        {drawRectangleOnCamera()}
-      </RNCamera>
-      {scannedValue ? (
-        <View>
-          <Text style={styles.scanAgainText} onPress={handleScanAgain}>
-            Clique para escanear novamente
-          </Text>
-          <Text style={styles.scannedValueText}>
-            Valor lido: {scannedValue}
-          </Text>
-        </View>
-      ) : null}
+      <QRCodeScanner
+        onRead={handleBarCodeRead}
+        showMarker={true}
+        reactivate={true}
+        reactivateTimeout={5000}
+        topContent={drawRectangleOnCamera()}
+        bottomContent={
+          scannedValue ? (
+            <View>
+              <Text style={styles.scannedValueText}>
+                Valor lido: {scannedValue}
+              </Text>
+            </View>
+          ) : null
+        }
+      />
     </View>
   );
 };
@@ -69,13 +71,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  camera: {
-    flex: 1,
-  },
   rectangleContainer: {
     position: 'absolute',
     borderWidth: 2,
-    borderColor: 'red',
+    borderColor: 'green',
     opacity: 0.7,
   },
   scannedValueText: {
@@ -85,7 +84,7 @@ const styles = StyleSheet.create({
     padding: 10,
     alignSelf: 'center',
     position: 'absolute',
-    top: 20,
+    bottom: 70,
   },
   scanAgainText: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
     padding: 10,
     alignSelf: 'center',
     position: 'absolute',
-    bottom: 20,
+    bottom: 30,
   },
 });
 

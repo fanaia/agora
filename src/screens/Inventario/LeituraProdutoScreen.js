@@ -10,9 +10,9 @@ const QRCodeScannerScreen = ({route}) => {
 
   const handleQRCodeRead = data => {
     setQRCodeData(data);
-    // Aqui você pode adicionar lógica para redirecionar para outra tela com os dados lidos
-    // navigation.navigate('OutraTela', {parametroRecebido, qrCodeData: data});
+
     console.log({depositoId, qrCodeData: data});
+    navigation.navigate('ConfirmacaoScreen', {depositoId, qrCodeData: data});
   };
 
   return (
