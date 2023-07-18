@@ -1,25 +1,26 @@
-import React from 'react';
-import {Text, StyleSheet} from 'react-native';
-import Screen from '../../components/Screen';
-import Section from '../../components/Section';
-// import CapturaQRCode from '../../components/CapturaQRCode';
+import React, {useState} from 'react';
+import {Text, View} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import CapturaQRCode from '../../components/CapturaQRCode';
 
-const LeituraProdutoScreen = ({route}) => {
+const QRCodeScannerScreen = ({route}) => {
+  const navigation = useNavigation();
   const {depositoId} = route.params;
+  const [qrCodeData, setQRCodeData] = useState('');
 
-  const handleProdutoCapturado = produtoId => {
-    console.log(`depositoId: ${depositoId}`);
-    console.log(`produtoId: ${produtoId}`);
+  const handleQRCodeRead = data => {
+    setQRCodeData(data);
+
+    console.log({depositoId, qrCodeData: data});
+    navigation.navigate('ConfirmacaoScreen', {depositoId, qrCodeData: data});
   };
 
   return (
-    <Screen>
-      <Section title="Leitura de Produto">
-        <Text>Depósito selecionado: {depositoId}</Text>
-        {/* <CapturaQRCode onProdutoCapturado={handleProdutoCapturado} /> */}
-      </Section>
-    </Screen>
+    <View style={{flex: 1}}>
+      <Text>Depósito: {depositoId}</Text>
+      <CapturaQRCode onQRCodeRead={handleQRCodeRead} />
+    </View>
   );
 };
 
-export default LeituraProdutoScreen;
+export default QRCodeScannerScreen;
